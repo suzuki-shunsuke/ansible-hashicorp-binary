@@ -3,7 +3,7 @@ hashicorp-binary
 
 [![Build Status](https://travis-ci.org/suzuki-shunsuke/ansible-hashicorp-binary.svg?branch=master)](https://travis-ci.org/suzuki-shunsuke/ansible-hashicorp-binary)
 
-Install hashicorp-binary on Linux.
+Install Hashicorp's binary.
 
 https://galaxy.ansible.com/suzuki-shunsuke/hashicorp-binary/
 
