@@ -1,0 +1,30 @@
+---
+# tasks file for hashicorp_binary
+- name: Remove files.
+  file:
+    state: absent
+    path: "/tmp/{{item}}"
+  with_items:
+  - "{{hashicorp_binary_name}}_{{hashicorp_binary_version}}_{{hashicorp_binary_arch}}.zip"
+  - "{{hashicorp_binary_name}}"
+- name: Download the package.
+  get_url:
+    url: "https://releases.hashicorp.com/{{hashicorp_binary_name}}/{{hashicorp_binary_version}}/{{hashicorp_binary_name}}_{{hashicorp_binary_version}}_{{hashicorp_binary_arch}}.zip"
+    dest: /tmp
+    mode: 0777
+- name: Unzip the package.
+  command: "unzip /tmp/{{hashicorp_binary_name}}_{{hashicorp_binary_version}}_{{hashicorp_binary_arch}}.zip -d /tmp"
+- name: Install hashicorp's binary
+  copy:
+    src: /tmp/{{hashicorp_binary_name}}
+    dest: "{{hashicorp_binary_install_dir}}"
+    remote_src: yes
+    mode: 0755
+  become: "{{hashicorp_binary_nonroot}}"
+- name: Remove files.
+  file:
+    state: absent
+    path: "/tmp/{{item}}"
+  with_items:
+  - "{{hashicorp_binary_name}}_{{hashicorp_binary_version}}_{{hashicorp_binary_arch}}.zip"
+  - "{{hashicorp_binary_name}}"

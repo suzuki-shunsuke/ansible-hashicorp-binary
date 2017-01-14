@@ -1,0 +1,3 @@
+---
+# vars file for hashicorp-binary
+hashicorp_binary_nonroot: "{{ (ansible_env.HOME == '/root') | ternary('no', 'yes') }}"

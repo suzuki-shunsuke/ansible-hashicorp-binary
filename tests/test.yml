@@ -1,0 +1,19 @@
+---
+- hosts: default
+  pre_tasks:
+  - name: Install unzip
+    apt:
+      name: zip
+    become: yes
+  roles:
+  - role: ansible-hashicorp-binary
+    hashicorp_binary_name: terraform
+    hashicorp_binary_arch: linux_amd64
+    hashicorp_binary_version: 0.8.4
+    hashicorp_binary_install_dir: /usr/bin
+  tasks:
+  - command: terraform version
+    register: result
+    changed_when: false
+  - debug:
+      var: result
