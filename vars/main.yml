@@ -1,3 +1,7 @@
 ---
 # vars file for hashicorp-binary
-hashicorp_binary_nonroot: "{{ (ansible_env.HOME == '/root') | ternary('no', 'yes') }}"
+hashicorp_binary_nonroot: "{{ (ansible_env.USER is undefined) | ternary(ansible_env.HOME != '/root', ansible_env.USER != 'root') }}"
+hashicorp_binary_os_families:
+  RedHat: RedHat
+  Debian: Debian
+  Darwin: Darwin
