@@ -1,12 +1,12 @@
 galaxy_info:
   author: Suzuki Shunsuke
-  description: Install Hashicorp's binary
+  description: ansible role to install Hashicorp's binary
   license: MIT
   min_ansible_version: 1.2
   github_branch: master
-
-  platforms: []
-
+  platforms:
+  - GenericLinux
+  - Darwin
   galaxy_tags:
   - hashicorp
 

@@ -1,0 +1,5 @@
+- name: install unzip
+  apt:
+    name: unzip
+    update_cache: yes
+  become: "{{hashicorp_binary_nonroot}}"

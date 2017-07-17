@@ -1,30 +1,65 @@
 ---
 # tasks file for hashicorp_binary
-- name: Remove files.
-  file:
-    state: absent
-    path: "/tmp/{{item}}"
-  with_items:
-  - "{{hashicorp_binary_name}}_{{hashicorp_binary_version}}_{{hashicorp_binary_arch}}.zip"
-  - "{{hashicorp_binary_name}}"
-- name: Download the package.
-  get_url:
-    url: "https://releases.hashicorp.com/{{hashicorp_binary_name}}/{{hashicorp_binary_version}}/{{hashicorp_binary_name}}_{{hashicorp_binary_version}}_{{hashicorp_binary_arch}}.zip"
-    dest: /tmp
-    mode: 0777
-- name: Unzip the package.
-  command: "unzip /tmp/{{hashicorp_binary_name}}_{{hashicorp_binary_version}}_{{hashicorp_binary_arch}}.zip -d /tmp"
-- name: Install hashicorp's binary
-  copy:
-    src: /tmp/{{hashicorp_binary_name}}
-    dest: "{{hashicorp_binary_install_dir}}"
-    remote_src: yes
-    mode: 0755
-  become: "{{hashicorp_binary_nonroot}}"
-- name: Remove files.
-  file:
-    state: absent
-    path: "/tmp/{{item}}"
-  with_items:
-  - "{{hashicorp_binary_name}}_{{hashicorp_binary_version}}_{{hashicorp_binary_arch}}.zip"
-  - "{{hashicorp_binary_name}}"
+- name: check whether the binary has already installed
+  stat:
+    path: "{{hashicorp_binary_lib_dir}}/{{hashicorp_binary_name}}-{{hashicorp_binary_version}}"
+  register: lib_stat
+- block:
+  - name: remove files in /tmp
+    file:
+      state: absent
+      path: "/tmp/{{item}}"
+    with_items:
+    - "{{hashicorp_binary_name}}_{{hashicorp_binary_version}}_{{hashicorp_binary_arch}}.zip"
+    - "{{hashicorp_binary_name}}"
+  - name: download the package
+    get_url:
+      url: "https://releases.hashicorp.com/{{hashicorp_binary_name}}/{{hashicorp_binary_version}}/{{hashicorp_binary_name}}_{{hashicorp_binary_version}}_{{hashicorp_binary_arch}}.zip"
+      dest: /tmp
+      mode: 0777
+  - include: "{{ hashicorp_binary_os_families.get(ansible_os_family, 'default') }}.yml"
+    static: no
+    when: ansible_os_family in hashicorp_binary_os_families
+  - name: unzip the package
+    command: "unzip /tmp/{{hashicorp_binary_name}}_{{hashicorp_binary_version}}_{{hashicorp_binary_arch}}.zip -d /tmp"
+  - name: install hashicorp's binary
+    copy:
+      src: /tmp/{{hashicorp_binary_name}}
+      dest: "{{hashicorp_binary_lib_dir}}/{{hashicorp_binary_name}}-{{hashicorp_binary_version}}"
+      remote_src: yes
+      mode: 0755
+    become: "{{hashicorp_binary_nonroot}}"
+  - name: remove files in /tmp and installed binary
+    file:
+      state: absent
+      path: "/tmp/{{item}}"
+    with_items:
+    - "{{hashicorp_binary_name}}_{{hashicorp_binary_version}}_{{hashicorp_binary_arch}}.zip"
+    - "{{hashicorp_binary_name}}"
+    - "{{hashicorp_binary_bin_dir}}/{{hashicorp_binary_name}}"
+    become: "{{hashicorp_binary_nonroot}}"
+  - name: create symbolic link
+    file:
+      state: link
+      src: "{{hashicorp_binary_lib_dir}}/{{hashicorp_binary_name}}-{{hashicorp_binary_version}}"
+      dest: "{{hashicorp_binary_bin_dir}}/{{hashicorp_binary_name}}"
+    become: "{{hashicorp_binary_nonroot}}"
+  when: not lib_stat.stat.exists
+- block:
+  - name: check whether the binary has already installed
+    stat:
+      path: "{{hashicorp_binary_bin_dir}}/{{hashicorp_binary_name}}"
+    register: st
+  - name: remove symbolic link
+    file:
+      state: absent
+      path: "{{hashicorp_binary_bin_dir}}/{{hashicorp_binary_name}}"
+    become: "{{hashicorp_binary_nonroot}}"
+    when: not st.stat.islnk or st.stat.lnk_source != "{}/{}-{}".format(hashicorp_binary_lib_dir, hashicorp_binary_name, hashicorp_binary_version)
+  - name: create symbolic link
+    file:
+      state: link
+      src: "{{hashicorp_binary_lib_dir}}/{{hashicorp_binary_name}}-{{hashicorp_binary_version}}"
+      dest: "{{hashicorp_binary_bin_dir}}/{{hashicorp_binary_name}}"
+    become: "{{hashicorp_binary_nonroot}}"
+  when: lib_stat.stat.exists
