@@ -29,14 +29,17 @@
       remote_src: yes
       mode: 0755
     become: "{{hashicorp_binary_nonroot}}"
-  - name: remove files in /tmp and installed binary
+  - name: remove files in /tmp
     file:
       state: absent
       path: "/tmp/{{item}}"
     with_items:
     - "{{hashicorp_binary_name}}_{{hashicorp_binary_version}}_{{hashicorp_binary_arch}}.zip"
     - "{{hashicorp_binary_name}}"
-    - "{{hashicorp_binary_bin_dir}}/{{hashicorp_binary_name}}"
+  - name: remove installed binary
+    file:
+      state: absent
+      path: "{{hashicorp_binary_bin_dir}}/{{hashicorp_binary_name}}"
     become: "{{hashicorp_binary_nonroot}}"
   - name: create symbolic link
     file:
