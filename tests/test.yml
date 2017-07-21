@@ -5,7 +5,14 @@
   - role: ansible-hashicorp-binary
     hashicorp_binary_name: terraform
     hashicorp_binary_arch: linux_amd64
+    hashicorp_binary_version: 0.9.10
+    become: yes
+  - role: ansible-hashicorp-binary
+    hashicorp_binary_name: terraform
+    hashicorp_binary_arch: linux_amd64
     hashicorp_binary_version: 0.8.4
+    hashicorp_binary_lib_dir: "{{ansible_env.HOME}}/bin"
+    hashicorp_binary_bin_dir: "{{ansible_env.HOME}}/bin"
   tasks:
   - command: terraform version
     register: result
